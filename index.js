@@ -10,14 +10,19 @@ app.use(cors())
 app.use(express.json())
 
 
+<<<<<<< HEAD
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.l12hi.mongodb.net/Hotel_managment?retryWrites=true&w=majority`;
+=======
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.l12hi.mongodb.net/Hotel-managment?retryWrites=true&w=majority`;
+>>>>>>> 29ffb361afe10d7c6ffb4b97cd5f6f3ae4607654
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 async function run() {
     try {
         await client.connect();
+<<<<<<< HEAD
         const database = client.db("Hotel_managment");
         const popularRoomsCollection = database.collection("roomCollection");
         const popularFoodCollection = database.collection("foodCollection");
@@ -33,6 +38,50 @@ async function run() {
             console.log(`A document was inserted with the _id: ${result.insertedId}`);
             res.json(result)
         })
+=======
+        console.log("connected to database");
+
+        const database = client.db('Hotel-managment');
+        const foodCollection = database.collection('foodCollection')
+        const roomCollection = database.collection('roomCollection')
+        // database post all room
+        app.post('/rooms', async (req, res) => {
+            const service = req.body;
+            console.log('hit the post', service)
+
+            const result = await roomCollection.insertOne(service)
+            console.log(result)
+            res.json(result)
+            // res.json('post hitten')
+        });
+        //get database load the data home page 
+        app.get('/rooms', async (req, res) => {
+            const cursor = roomCollection.find({})
+            const result = await cursor.toArray();
+            res.json(result)
+        })
+
+        // database post all products 
+
+        app.post('/foods', async (req, res) => {
+            const service = req.body;
+            console.log('hit the post', service)
+
+            const result = await foodCollection.insertOne(service)
+            console.log(result)
+            res.json(result)
+            // res.json('post hitten')
+        });
+
+        //get database load the data home page 
+        app.get('/foods', async (req, res) => {
+            const cursor = foodCollection.find({})
+            const result = await cursor.toArray();
+            res.json(result)
+        })
+
+
+>>>>>>> 29ffb361afe10d7c6ffb4b97cd5f6f3ae4607654
 
         app.get('/foods', async (req, res) => {
             // const email = req.query.email;
@@ -46,6 +95,7 @@ async function run() {
             const result = await confirmFoodOrderCollection.insertOne(room);
             console.log(`A document was inserted with the _id: ${result.insertedId}`);
             res.json(result)
+<<<<<<< HEAD
         })
         //  get my orders
         app.get('/confirmFoods', async (req, res) => {
@@ -194,14 +244,26 @@ async function run() {
         // })
 
     } finally {
+=======
+        });
+
+    }
+    finally {
+>>>>>>> 29ffb361afe10d7c6ffb4b97cd5f6f3ae4607654
         // await client.close();
     }
 }
 run().catch(console.dir);
 
+<<<<<<< HEAD
 app.get('/', (req, res) => {
     res.send('Hello group project')
 })
+=======
+app.get("/", (req, res) => {
+    res.send("Hello World!  ");
+});
+>>>>>>> 29ffb361afe10d7c6ffb4b97cd5f6f3ae4607654
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
