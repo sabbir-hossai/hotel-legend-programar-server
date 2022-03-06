@@ -1,100 +1,208 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-require("dotenv").config();
-const MongoClient = require("mongodb").MongoClient;
-const ObjectId = require("mongodb").ObjectId;
+const express = require('express')
+const cors = require('cors')
+const app = express()
+const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
+require('dotenv').config()
+const port = process.env.PORT || 5000
+
+app.use(cors())
+app.use(express.json())
 
 
-const port = 5000;
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ev8on.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.l12hi.mongodb.net/Hotel_managment?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+
 async function run() {
     try {
         await client.connect();
-        console.log("connected to database");
+        const database = client.db("Hotel_managment");
+        const popularRoomsCollection = database.collection("roomCollection");
+        const popularFoodCollection = database.collection("foodCollection");
+        const confirmFoodOrderCollection = database.collection("FoodOrders");
+        const confirmRoomOrderCollection = database.collection("RoomOrders");
+        // const reviewsCollection = database.collection("reviews");
+        // const usersCollection = database.collection("laptopUsers");
 
-        const database = client.db('resturant');
-        const foodCollection = database.collection('Addfood')
-        const roomCollection = database.collection('Add-room')
-        const confirmRoomCollection = database.collection('Confirm-room')
 
-        // database post all products 
-        app.post('/food', async (req, res) => {
-            const service = req.body;
-            console.log('hit the post', service)
-
-            const result = await foodCollection.insertOne(service)
-            console.log(result)
+        app.post('/foods', async (req, res) => {
+            const appointment = req.body;
+            const result = await popularFoodCollection.insertOne(appointment);
+            console.log(`A document was inserted with the _id: ${result.insertedId}`);
             res.json(result)
-            // res.json('post hitten')
-        });
+        })
 
-        //get database load the data home page 
-        app.get('/food', async (req, res) => {
-            const cursor = foodCollection.find({})
-            const result = await cursor.toArray()
+        app.get('/foods', async (req, res) => {
+            // const email = req.query.email;
+            // const query = { email: email }
+            const cursor = popularFoodCollection.find({})
+            const result = await cursor.toArray();
             res.json(result)
-        });
-
-        // parchage page or details page of get api 
-        app.get('/food/:id', async (req, res) => {
-            const id = req.params.id
-            const query = { _id: ObjectId(id) }
-            const result = await foodCollection.findOne(query)
+        })
+        app.post('/confirmFoods', async (req, res) => {
+            const room = req.body;
+            const result = await confirmFoodOrderCollection.insertOne(room);
+            console.log(`A document was inserted with the _id: ${result.insertedId}`);
             res.json(result)
-        });
-        app.get('/room/:id', async (req, res) => {
-            const id = req.params.id
-            const query = { _id: ObjectId(id) }
-            const result = await roomCollection.findOne(query)
+        })
+        //  get my orders
+        app.get('/confirmFoods', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const cursor = confirmFoodOrderCollection.find(query)
+            const appointments = await cursor.toArray();
+            res.json(appointments)
+        })
+
+        // rooms --------------------------start
+        app.post('/rooms', async (req, res) => {
+            const appointment = req.body;
+            const result = await popularRoomsCollection.insertOne(appointment);
+            console.log(`A document was inserted with the _id: ${result.insertedId}`);
             res.json(result)
-        });
+        })
 
-        // database post all room
-        app.post('/room', async (req, res) => {
-            const service = req.body;
-            console.log('hit the post', service)
-
-            const result = await roomCollection.insertOne(service)
-            console.log(result)
+        app.get('/rooms', async (req, res) => {
+            // const email = req.query.email;
+            // const query = { email: email }
+            const cursor = popularRoomsCollection.find({})
+            const result = await cursor.toArray();
             res.json(result)
-            // res.json('post hitten')
-        });
+        })
 
-        app.get('/room', async (req, res) => {
-            const cursor = roomCollection.find({})
-            const result = await cursor.toArray()
+        // order  api start 
+        app.post('/confirmRooms', async (req, res) => {
+            const room = req.body;
+            const result = await confirmRoomOrderCollection.insertOne(room);
+            console.log(`A document was inserted with the _id: ${result.insertedId}`);
             res.json(result)
-        });
+        })
+        //  get my orders
+        app.get('/confirmRooms', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const cursor = confirmRoomOrderCollection.find(query)
+            const appointments = await cursor.toArray();
+            res.json(appointments)
+        })
+        // rooms --------------------------end
 
-        app.post('/confirmRoom', async (req, res) => {
-            const service = req.body;
-            console.log('hit the post', service)
+        // manage admin all Order 
+        app.get('/allOrders', async (req, res) => {
+            // const email = req.query.email;
+            // const query = { email: email }
+            const cursor = confirmLaptopOrderCollection.find({})
+            const appointments = await cursor.toArray();
+            res.json(appointments)
+        })
+        // delete api 
+        app.delete('/confirmOrders/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log('deleting with id', id);
+            const query = { _id: ObjectId(id) };
+            const result = await confirmLaptopOrderCollection.deleteOne(query);
+            res.json(result);
+        })
 
-            const result = await roomCollection.insertOne(service)
-            console.log(result)
-            res.json(result)
-            // res.json('post hitten')
-        });
+        // // all products 
 
-    }
-    finally {
+        // // create products 
+        // app.post('/productAdd', async (req, res) => {
+        //     const appointment = req.body;
+        //     console.log(appointment)
+        //     const result = await popularLaptopsCollection.insertOne(appointment);
+        //     console.log(`A document was inserted with the _id: ${result.insertedId}`);
+        //     res.json(result)
+        // })
+
+
+
+
+        // app.get('/popularlaptops/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const user = await popularLaptopsCollection.findOne(query);
+        //     // console.log('load user with id: ', id);
+        //     res.send(user);
+        // })
+
+        // // detele products 
+
+        // app.delete('/popularlaptops/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     console.log('deleting with id', id);
+        //     const query = { _id: ObjectId(id) };
+        //     const result = await popularLaptopsCollection.deleteOne(query);
+        //     res.json(result);
+        // })
+
+
+
+        // // get reviews ..................start 
+        // // post reviews 
+        // app.post('/reviews', async (req, res) => {
+        //     const reviews = req.body;
+        //     console.log(reviews)
+        //     const result = await reviewsCollection.insertOne(reviews);
+        //     console.log(`A document was inserted with the _id: ${result.insertedId}`);
+        //     res.json(result)
+        // })
+
+        // // get api 
+        // app.get('/reviews', async (req, res) => {
+        //     // const email = req.query.email;
+        //     // const query = { email: email }
+        //     const cursor = reviewsCollection.find({})
+        //     const appointments = await cursor.toArray();
+        //     res.json(appointments)
+        // })
+
+
+        // // user api .............  start
+        // app.post('/users', async (req, res) => {
+        //     const user = req.body;
+        //     console.log(user)
+        //     const result = await usersCollection.insertOne(user);
+        //     console.log(`A document was inserted with the _id: ${result.insertedId}`);
+        //     res.json(result)
+        // })
+
+
+
+        // // user ..................... make admin 
+        // app.put('/users/admin', async (req, res) => {
+        //     const user = req.body;
+        //     console.log(user)
+        //     const filter = { email: user.email };
+        //     const updateDoc = { $set: { role: 'admin' } };
+        //     const result = await usersCollection.updateOne(filter, updateDoc)
+        //     res.json(result)
+
+        // })
+        // // get admin 
+        // app.get('/users/admin/:email', async (req, res) => {
+        //     const email = req.params.email;
+        //     const query = { email: email }
+        //     const user = await usersCollection.findOne(query);
+        //     let isAdmin = false;
+        //     if (user?.role === 'admin') {
+        //         isAdmin = true;
+        //     }
+        //     res.json({ admin: isAdmin })
+        // })
+
+    } finally {
         // await client.close();
     }
-
 }
-run().catch(console.dir)
+run().catch(console.dir);
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
+app.get('/', (req, res) => {
+    res.send('Hello group project')
+})
 
 app.listen(port, () => {
-    console.log("runnning online on port", port)
-});
+    console.log(`Example app listening at http://localhost:${port}`)
+})
