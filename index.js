@@ -67,7 +67,6 @@ async function run() {
             const result = await foodCollection.findOne(query)
             res.json(result)
         });
-
         app.get('/room/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
